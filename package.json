@@ -44,11 +44,15 @@
     "eslint-plugin-promise": "^3.4.0",
     "eslint-plugin-standard": "^2.0.1",
     "extract-text-webpack-plugin": "^2.0.0-beta.4",
-    "node-sass": "^4.0.0",
+    "node-sass": "^4.14.1",
     "sass-loader": "^4.1.0",
     "vue-loader": "^10.0.0",
     "vue-template-compiler": "^2.1.6",
     "webpack": "^2.1.0-beta.28",
     "webpack-merge": "^1.1.2"
+  },
+  "dependencies": {
+    "babel-preset-env": "^1.7.0",
+    "jcrop": "https://github.com/haijerc/Jcrop#ef425635ca7a85357da5adbe17a05159a0893b3d"
   }
 }

@@ -18,18 +18,30 @@ export default {
     startup(img){
       console.log(this.options);
       this.jcrop = Jcrop.attach(img,this.options||{});
+      window.jCrops = window.jCrops || [];
+      window.jCrops.push(this.jcrop);
+
       var rect = Jcrop.Rect.sizeOf(this.jcrop.el);
+
+      console.log(rect);
 
       ['activate','update','change','remove'].forEach(ev => {
         this.jcrop.listen('crop.'+ev,widget => this.$emit(ev,widget));
       });
 
-      if (this.rect) rect = Jcrop.Rect.from(this.rect);
-      else rect = rect.scale(.7,.5).center(rect.w,rect.h)
+      if (this.rect)
+      {
+        rect = Jcrop.Rect.from(this.rect);
+        console.log(rect);
+      }
+      else
+    {
+        //rect = rect.scale(.7,.5).center(rect.w,rect.h)
+    }
 
       this.jcrop.newWidget(rect);
       this.pos = this.jcrop.pos;
-      this.jcrop.focus();
+      //this.jcrop.focus();
     }
   },
   watch: {
@@ -38,7 +50,7 @@ export default {
         if (!this.jcrop.active) return false;
         this.jcrop.active.animate(Jcrop.Rect.from(v),20,'inOutCirc')
           .then(() => {
-            this.jcrop.focus();
+            //this.jcrop.focus();
           });
       },
       deep: true
