@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js?ver=5.0.7' id='jquery-bruid-js'></script>
+        <script src='https://bruidapi.zoektim.nl/js/vue/vue.min.js' id='vue2-js'></script>
+        <script src='https://bruidapi.zoektim.nl/dist/jcrop.js' id='jcrop-a-js'></script>
+        <script src='/dist/vue-jcrop.browser.js' id='jcrop-a-js'></script>
+        <link rel='stylesheet' id='jcrop-b-css'  href='/dist/vue-jcrop.css' media='all' />
+    </head>
+    <body>
+        <style type="text/css">
+        img {
+            height: auto;
+            width: 100%;
+        }
+        .image-holder {
+            width: 200px;
+        }
+        </style>
+        <div id="vue-app-holder" v-cloak></div>
+        <script type="text/x-template" id="vue-app">
+            <div>
+                I am the template!
+                <ul style="display: block;">
+                    <li v-for="(banner, bannerIndex) in banners" v-on:click="bannerChoice = bannerIndex">{{ banner.image }} {{ JSON.stringify(banner.crop, null, true) }}</li>
+                </ul>
+                <pre>
+                {{ JSON.stringify(debug, null, true) }}
+                </pre>
+
+                <div class="image-holder">
+                <Jcrop v-if="bannerChoice !== null"
+                    :key="bannerChoice+'_'+banners[bannerChoice].image"
+                    :src="banners[bannerChoice].image"
+                    @activate="jcropActivate($event, banners[bannerChoice])"
+                    @change="jcropChange($event, banners[bannerChoice])"
+                    :options="{canSelect: true, canResize: true, canDrag: true}"
+                    />
+                </div>
+            </div>
+        </script>
+<script type="text/javascript">
+Vue.config.devtools = true;
+Vue.component('Jcrop', VueJcrop.Jcrop);
+if (typeof AppDataStoreObject == "undefined")
+{
+  AppDataStoreObject = {};
+}
+var vueConfig = {
+  el: '#vue-app-holder',
+  template: '#vue-app',
+  data: function (){
+
+    var obj = {
+      bannerChoice: null,
+      banners: [
+          {
+            image: "https://www.bruidenbruidegom.nl/wp-content/uploads/2022/10/043b1_1716_1-600x600.jpg",
+            crop: {
+                x: null,
+                y: null,
+                w: null,
+                h: null
+            }
+          },
+          {
+              image: "https://www.bruidenbruidegom.nl/wp-content/uploads/2022/06/Fletcher-luxe-arrangement-1530x280-1-1530x280.jpg",
+              crop: {
+                x: null,
+                y: null,
+                w: null,
+                h: null
+            }
+          },
+          {
+              image: "https://www.bruidenbruidegom.nl/wp-content/uploads/2021/10/BB_website_Facebook_2-1530x280.jpg",
+          },
+          {
+              image: "https://bruidapi.zoektim.nl/images/weddingguide/93/top_werkschoenen_banner.jpg",
+          }
+      ],
+      debug: {}
+    };
+    
+    
+    
+    return obj; 
+  },
+  methods: {
+    jcropActivate: function(ev, image)
+    {
+        //will generate full width rect
+        var imageRect = Jcrop.Rect.from(ev.stage.srcEl);
+        this.debug.rect = imageRect;
+        this.debug.srcEl_w = ev.stage.srcEl.width;
+        this.debug.srcEl_h = ev.stage.srcEl.height;
+        
+        if(image.crop != null && image.crop.x !== null)
+        {
+            var scaleX = ev.stage.srcEl.width/ev.stage.srcEl.naturalWidth;//before ev.stage.scalex
+            var scaleY = ev.stage.srcEl.height/ev.stage.srcEl.naturalHeight;//before
+        
+            //update rect with our crop values
+            imageRect.x = image.crop.x*scaleX;
+            imageRect.y = image.crop.y*scaleY;
+            imageRect.w = image.crop.w*scaleX;
+            imageRect.h = image.crop.h*scaleY;
+            
+            if (imageRect.x > ev.stage.srcEl.width)
+            {
+                imageRect.x = 0;
+            }
+            if (imageRect.y > ev.stage.srcEl.height)
+            {
+                imageRect.y = 0;
+            }
+            if (imageRect.w+imageRect.x > ev.stage.srcEl.width)
+            {
+                imageRect.w = ev.stage.srcEl.width-imageRect.x;
+            }
+            if (imageRect.h+imageRect.y > ev.stage.srcEl.height)
+            {
+                imageRect.h = ev.stage.srcEl.height-imageRect.y;
+            }
+        }
+        else
+        {
+            /*imageRect.w = imageRect.w/2;
+            imageRect.h = imageRect.h/2;
+            imageRect.x += 0.5*imageRect.w;
+            imageRect.y += 0.5*imageRect.h;*/
+            
+            imageRect.w = ev.stage.srcEl.width/2;
+            imageRect.h = ev.stage.srcEl.height/2;
+            imageRect.x = ev.stage.srcEl.width/4;
+            imageRect.y = ev.stage.srcEl.height/4;
+            //update this data back..
+            this.setImageCropData(image, imageRect);
+        }
+
+        //do animation
+        ev.stage.active.animate(imageRect,30,function(){return 1;});
+        
+        //document.body.scrollTop = document.documentElement.scrollTop = 0;
+        
+    },
+    setImageCropData: function(image, rect)
+    {
+        if (image.crop == undefined)
+        {
+            Vue.set(image, 'crop', {
+                x: 0,
+                y: 0,
+                w: 0,
+                h: 0/*,
+                aspect: 1,
+                x2: 0,
+                y2: 0*/
+            });
+        }
+        if (image.crop.x != rect.x)
+        {
+            image.crop.x = rect.x;
+        }
+        if (image.crop.y != rect.y)
+        {
+            image.crop.y = rect.y;
+        }
+        if (image.crop.w != rect.w)
+        {
+            image.crop.w = rect.w;
+        }
+        if (image.crop.h != rect.h)
+        {
+            image.crop.h = rect.h;
+        }
+        
+        //volgens mij niet nodig..
+        /*if (image.crop.aspect != rect.aspect)
+        {
+            image.crop.aspect = rect.aspect;
+        }
+        if (image.crop.x2 != rect.x2)
+        {
+            image.crop.x2 = rect.x2;
+        }
+        if (image.crop.y2 != rect.y2)
+        {
+            image.crop.y2 = rect.y2;
+        }*/
+        
+        /*Vue.set(image, 'crop', {
+            x:rect.x,
+            y:rect.y,
+            w:rect.w,
+            h:rect.h,
+            aspect:rect.aspect,
+            x2:rect.x2,
+            y2:rect.y2,
+        });*/
+    },
+    jcropChange: function(ev, image)
+    {
+        //debugger;
+        if(ev.pos.x == null)
+            return;
+
+        var pos = {
+            x: ev.pos.x,
+            y: ev.pos.y,
+            w: ev.pos.w,
+            h: ev.pos.h,
+            aspect: 1
+        };
+        
+        var scaleX = ev.stage.srcEl.naturalWidth/ev.stage.srcEl.width;//before ev.stage.scalex
+        var scaleY = ev.stage.srcEl.naturalHeight/ev.stage.srcEl.height;//before
+        
+        pos.x *= scaleX;
+        pos.y *= scaleY;
+        pos.w *= scaleX;
+        pos.h *= scaleY;
+
+        this.setImageCropData(image, pos);
+    },
+  }
+}
+AppDataStoreObject.myApp = new Vue(vueConfig);
+</script>
+    </body>
+</html>

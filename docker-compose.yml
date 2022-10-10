@@ -1,0 +1,32 @@
+version: "2"
+services:
+
+  nginx:
+    image: nginx
+    restart: "no"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./www:/usr/share/nginx/html
+      - ./dist:/usr/share/nginx/html/dist
+    expose:
+      - 80
+    environment:
+      VIRTUAL_HOST: jcrop
+    extra_hosts:
+      - "jcrop:127.0.0.1"
+    links:
+      - php:php
+    networks:
+      default:
+        aliases:
+          - jcrop
+
+  php:
+    build: ./php
+    restart: "no"
+    volumes:
+      - ./www:/usr/share/nginx/html
+
+networks:
+  default:
+    name: nginx-proxy
